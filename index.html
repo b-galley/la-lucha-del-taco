@@ -1,0 +1,1756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
+<title>La Lucha del Taco · Mayo 5, 2026</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/canvas-confetti/1.9.3/confetti.browser.min.js" onerror="console.warn('canvas-confetti failed to load; confetti disabled.')"></script>
+<style>
+:root {
+  --crimson: #C8102E;
+  --crimson-dark: #8B0A1F;
+  --gold: #FFB81C;
+  --gold-dark: #C8920F;
+  --jet: #0F0F0F;
+  --bone: #FFF5E1;
+  --verde: #006847;
+  --paper: #F4E8C8;
+
+  --font-display: 'Impact', 'Haettenschweiler', 'Arial Narrow Bold', 'Bebas Neue', sans-serif;
+  --font-body: Georgia, 'Times New Roman', serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  font-family: var(--font-body);
+  background: var(--jet);
+  color: var(--bone);
+  overflow-x: hidden;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Subtle diagonal stripe atmosphere */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    repeating-linear-gradient(45deg,
+      rgba(255,184,28,0.025) 0px,
+      rgba(255,184,28,0.025) 2px,
+      transparent 2px,
+      transparent 14px);
+  pointer-events: none;
+  z-index: 1;
+}
+
+button { font-family: inherit; }
+input, textarea { font-family: inherit; }
+
+/* ================ SPLASH ================ */
+.splash {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background:
+    radial-gradient(ellipse at center, var(--crimson) 0%, var(--crimson-dark) 60%, var(--jet) 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 1.5rem;
+  text-align: center;
+  overflow: hidden;
+}
+
+.splash::before {
+  content: '';
+  position: absolute;
+  inset: -50%;
+  background:
+    repeating-conic-gradient(from 0deg at 50% 50%,
+      transparent 0deg,
+      rgba(255,184,28,0.08) 8deg,
+      transparent 16deg);
+  animation: spin 90s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.splash-content {
+  position: relative;
+  z-index: 2;
+  max-width: 540px;
+  animation: enterIn 0.8s ease-out;
+}
+
+@keyframes enterIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.splash-mask {
+  width: 110px;
+  height: 110px;
+  margin: 0 auto 1rem;
+  filter: drop-shadow(0 8px 0 rgba(0,0,0,0.45));
+}
+
+.splash-eyebrow {
+  font-family: var(--font-display);
+  letter-spacing: 0.32em;
+  font-size: 0.85rem;
+  color: var(--gold);
+  text-transform: uppercase;
+  border-top: 2px solid var(--gold);
+  border-bottom: 2px solid var(--gold);
+  padding: 0.4rem 0;
+  margin-bottom: 1.2rem;
+  display: inline-block;
+}
+
+.splash-title {
+  font-family: var(--font-display);
+  font-size: clamp(3rem, 14vw, 6rem);
+  line-height: 0.85;
+  letter-spacing: 0.02em;
+  color: var(--bone);
+  text-transform: uppercase;
+  text-shadow:
+    4px 4px 0 var(--jet),
+    -2px -2px 0 var(--gold);
+  margin-bottom: 0.6rem;
+}
+
+.splash-title em {
+  font-style: italic;
+  color: var(--gold);
+  display: block;
+  font-size: 0.6em;
+  text-shadow: 3px 3px 0 var(--jet);
+  margin-top: 0.2em;
+}
+
+.splash-credentials {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--bone);
+  margin: 1.2rem 0;
+  padding: 0.5rem 1rem;
+  display: inline-block;
+  border: 2px solid var(--gold);
+  background: rgba(0,0,0,0.4);
+}
+
+.splash-flavor {
+  font-family: var(--font-body);
+  font-style: italic;
+  color: var(--bone);
+  font-size: 1.05rem;
+  line-height: 1.5;
+  margin: 1rem auto 2rem;
+  max-width: 460px;
+  opacity: 0.92;
+}
+
+.countdown-label {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  letter-spacing: 0.28em;
+  color: var(--gold);
+  text-transform: uppercase;
+  margin-bottom: 0.7rem;
+}
+
+.countdown {
+  display: flex;
+  justify-content: center;
+  gap: 0.7rem;
+  margin-bottom: 2.2rem;
+  flex-wrap: wrap;
+}
+
+.countdown-cell {
+  background: var(--jet);
+  border: 3px solid var(--gold);
+  padding: 0.65rem 0.9rem;
+  min-width: 72px;
+  box-shadow: 4px 4px 0 rgba(0,0,0,0.35);
+}
+
+.countdown-num {
+  font-family: var(--font-display);
+  font-size: 2.2rem;
+  line-height: 1;
+  color: var(--gold);
+  display: block;
+}
+
+.countdown-unit {
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  letter-spacing: 0.22em;
+  color: var(--bone);
+  text-transform: uppercase;
+  margin-top: 0.3rem;
+}
+
+.enter-btn {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--jet);
+  background: var(--gold);
+  border: 3px solid var(--bone);
+  padding: 1rem 2.5rem;
+  cursor: pointer;
+  box-shadow: 6px 6px 0 var(--jet);
+  transition: transform 0.12s, box-shadow 0.12s;
+}
+
+.enter-btn:active {
+  transform: translate(3px, 3px);
+  box-shadow: 3px 3px 0 var(--jet);
+}
+
+/* ================ MAIN APP ================ */
+.app-shell { display: none; }
+.app-shell.active { display: block; }
+
+.sticky-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--jet);
+  border-bottom: 3px solid var(--gold);
+  padding: 0.6rem 1rem;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.55);
+}
+
+.sticky-header-row {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.sticky-mask { width: 38px; height: 38px; flex-shrink: 0; }
+
+.sticky-title-block { flex: 1; min-width: 0; }
+.sticky-title {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  letter-spacing: 0.05em;
+  color: var(--gold);
+  line-height: 1;
+  text-transform: uppercase;
+}
+.sticky-date {
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  letter-spacing: 0.22em;
+  color: var(--bone);
+  margin-top: 0.25rem;
+}
+
+.sticky-leader {
+  text-align: right;
+  flex-shrink: 0;
+  max-width: 42%;
+  border-left: 2px solid var(--gold);
+  padding-left: 0.7rem;
+}
+.sticky-leader-label {
+  font-family: var(--font-display);
+  font-size: 0.6rem;
+  letter-spacing: 0.22em;
+  color: var(--gold);
+}
+.sticky-leader-name {
+  font-family: var(--font-body);
+  font-weight: bold;
+  font-size: 0.85rem;
+  color: var(--bone);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 0.1rem;
+}
+.sticky-leader-score {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  color: var(--gold);
+  line-height: 1;
+}
+
+/* ================ LAYOUT ================ */
+.main-grid {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+  grid-template-columns: 1fr;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+@media (min-width: 920px) {
+  .main-grid {
+    grid-template-columns: 1fr 320px;
+    align-items: start;
+  }
+}
+
+.left-col { display: flex; flex-direction: column; gap: 1rem; min-width: 0; }
+
+/* ================ MAP ================ */
+.map-section {
+  border: 3px solid var(--gold);
+  background: var(--jet);
+  position: relative;
+}
+
+.section-header {
+  background: var(--crimson);
+  color: var(--gold);
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  letter-spacing: 0.22em;
+  padding: 0.55rem 1rem;
+  text-transform: uppercase;
+  border-bottom: 3px solid var(--gold);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  text-shadow: 2px 2px 0 var(--jet);
+}
+
+#map {
+  width: 100%;
+  height: 280px;
+  background: #555;
+}
+
+/* Override Leaflet popup look */
+.leaflet-popup-content-wrapper {
+  background: var(--paper) !important;
+  color: var(--jet) !important;
+  border: 2px solid var(--jet);
+  border-radius: 0 !important;
+}
+.leaflet-popup-content {
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  margin: 0.6rem 0.8rem !important;
+}
+.leaflet-popup-content strong {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--crimson);
+}
+.leaflet-popup-tip { background: var(--paper) !important; border: 2px solid var(--jet); }
+
+/* ================ STOPS ================ */
+.stops-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+#stopsList {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.stop-card {
+  border: 3px solid var(--gold);
+  background: var(--paper);
+  color: var(--jet);
+  position: relative;
+  box-shadow: 4px 4px 0 rgba(0,0,0,0.35);
+}
+
+.stop-card.is-leader {
+  border-color: var(--bone);
+  box-shadow: 0 0 0 4px var(--gold), 4px 4px 0 rgba(0,0,0,0.5);
+}
+
+.stop-card.is-leader::before {
+  content: '🏆 EL CAMPEÓN ACTUAL';
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--gold);
+  color: var(--jet);
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  letter-spacing: 0.22em;
+  padding: 0.25rem 0.7rem;
+  border: 2px solid var(--jet);
+  white-space: nowrap;
+  z-index: 5;
+}
+
+.stop-header {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 0.8rem;
+  align-items: center;
+  background: var(--jet);
+  color: var(--gold);
+  padding: 0.7rem 0.9rem;
+  cursor: pointer;
+  border-bottom: 3px solid var(--crimson);
+  user-select: none;
+}
+
+.stop-number {
+  font-family: var(--font-display);
+  font-size: 1.7rem;
+  line-height: 1;
+  background: var(--gold);
+  color: var(--jet);
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  border: 2px solid var(--bone);
+  flex-shrink: 0;
+  box-shadow: 2px 2px 0 var(--crimson-dark);
+}
+
+.stop-name-block { min-width: 0; }
+.stop-name {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.stop-address {
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  font-style: italic;
+  color: var(--bone);
+  margin-top: 0.2rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0.85;
+}
+
+.stop-score-pill {
+  background: var(--crimson);
+  color: var(--gold);
+  font-family: var(--font-display);
+  padding: 0.25rem 0.55rem;
+  border: 2px solid var(--gold);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1;
+  min-width: 58px;
+  position: relative;
+}
+.stop-score-pill small {
+  font-size: 0.55rem;
+  letter-spacing: 0.18em;
+  margin-bottom: 0.2rem;
+}
+.pill-score {
+  font-size: 1.4rem;
+  line-height: 1;
+}
+.stop-toggle-icon {
+  width: 14px;
+  height: 14px;
+  margin-top: 0.25rem;
+  transition: transform 0.2s;
+  color: var(--gold);
+}
+.stop-card.expanded .stop-toggle-icon { transform: rotate(180deg); }
+
+.stop-body { padding: 1rem; display: none; animation: slideDown 0.25s ease-out; }
+.stop-card.expanded .stop-body { display: block; }
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.stop-description {
+  font-family: var(--font-body);
+  font-style: italic;
+  font-size: 0.95rem;
+  margin-bottom: 1rem;
+  color: var(--jet);
+  border-left: 4px solid var(--crimson);
+  padding-left: 0.8rem;
+  line-height: 1.4;
+}
+
+.photo-section {
+  margin-bottom: 1rem;
+}
+
+.photo-thumb {
+  display: block;
+  width: 100%;
+  max-height: 220px;
+  object-fit: cover;
+  border: 3px solid var(--jet);
+  margin-bottom: 0.5rem;
+  box-shadow: 3px 3px 0 var(--crimson-dark);
+}
+
+.photo-upload-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  letter-spacing: 0.18em;
+  background: var(--jet);
+  color: var(--gold);
+  padding: 0.5rem 0.9rem;
+  cursor: pointer;
+  border: 2px solid var(--gold);
+  text-transform: uppercase;
+}
+.photo-upload-label input { display: none; }
+
+/* ================ SLIDERS ================ */
+.score-grid {
+  display: grid;
+  gap: 0.85rem;
+  margin-bottom: 1.1rem;
+}
+
+.score-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  column-gap: 0.6rem;
+  row-gap: 0.4rem;
+  align-items: center;
+  border-bottom: 1px dashed rgba(0,0,0,0.2);
+  padding-bottom: 0.7rem;
+}
+.score-row:last-of-type { border-bottom: none; padding-bottom: 0; }
+
+.score-label {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--jet);
+  line-height: 1;
+}
+.score-sublabel {
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  font-style: italic;
+  color: rgba(0,0,0,0.62);
+  margin-top: 0.18rem;
+}
+
+.score-value {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  background: var(--crimson);
+  color: var(--gold);
+  width: 50px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border: 2px solid var(--jet);
+  line-height: 1;
+}
+
+.score-slider {
+  grid-column: 1 / -1;
+  width: 100%;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 8px;
+  background: var(--jet);
+  border: 2px solid var(--jet);
+  outline: none;
+  cursor: pointer;
+  overflow: visible;
+  -webkit-overflow: visible;
+}
+.score-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 32px;
+  height: 32px;
+  margin-top: -12px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzgiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCAzOCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGcgc3R5bGU9Im1peC1ibGVuZC1tb2RlOmRpZmZlcmVuY2UiIGZpbHRlcj0idXJsKCNmaWx0ZXIwX2RfMTQ3XzEzKSI+CjxwYXRoIGQ9Ik0xMS4yMTM5IDMwLjk1QzguMTYzOSAzMC45NSA1LjIxMzkgMzAuOTUgNC4wNjM5IDE1LjU1QzIuNTEzOSAtNS40NTAwNCAzMC4xMTM5IDIuMTk5OTYgMzAuMTEzOSAxNC4zQzMwLjExMzkgMjAuOTUgMTEuMjEzOSAzMC45NSAxMS4yMTM5IDMwLjk1WiIgZmlsbD0iI0QzOTc2RSIvPgo8cGF0aCBvcGFjaXR5PSIwLjUiIGQ9Ik00LjgxMzk2IDE1LjU1QzQuMTYzOTYgNi41NTAwMiA4LjgxMzk2IDIuODUwMDIgMTQuNDE0IDIuNDUwMDJWMi40MDAwMkM4LjUxMzk2IDIuNTAwMDIgMy4zNjM5NiA2LjE1MDAyIDQuMDYzOTYgMTUuNTVDNS4xMTM5NiAyOS44IDcuNzYzOTYgMzAuOTUgMTAuNTE0IDMwLjk1QzcuOTYzOTYgMzAuNSA1Ljc2Mzk2IDI4LjU1IDQuODEzOTYgMTUuNTVaIiBmaWxsPSJ3aGl0ZSIvPgo8cGF0aCBkPSJNMTIuNjY0IDEyLjc1TDUuMTY0MDEgMTYuMDVMNC4xMTQwMSAxOC41TDUuNDY0MDEgMTkuM0w0LjUxNDAxIDIxLjQ1TDUuMjY0MDEgMjEuOUw0LjIxNDAxIDI0LjE1TDUuODY0MDEgMjUuMTVMNC45MTQwMSAyNy4zTDYuODY0MDEgMjguNUw2LjUxNDAxIDI5LjNMOC43NjQwMSAzMC42NUw5LjIxNDAxIDI5LjY1TDEwLjMxNCAzMC45TDEyLjExNCAzMC40NUwxNy45NjQgMTkuMkwxMi42NjQgMTIuNzVaIiBmaWxsPSIjNTk0NjQwIi8+CjxwYXRoIGQ9Ik0xNC41MTQgMTkuNUwxNi4wMTQgMTcuNUw0Ljg2Mzk2IDE2LjA1TDQuMDYzOTYgMTcuODVMNS43MTM5NiAxOC44NUw2LjIxMzk2IDE3Ljc1TDcuMDYzOTYgMTguMjVMNi40MTM5NiAxOS42NUw1LjI2Mzk2IDE4Ljk1MDFMNC40NjM5NiAyMC43NUw2LjExMzk2IDIxLjcwMDFMNi43NjM5NiAyMC4yMDAxTDcuODYzOTYgMjAuODVMNy44MTM5NiAyMUw4LjgxMzk2IDIxLjZMOC41MTM5NiAyMS45TDYuOTYzOTYgMjFMNi4yNjM5NiAyMi41TDQuOTEzOTYgMjEuNzAwMUw0LjExMzk2IDIzLjVMNS43NjM5NiAyNC40NTAxTDYuNDEzOTYgMjNMNy43NjM5NiAyMy44TDguMTYzOTYgMjIuODVMOC41MTM5NiAyMy4yNUw4LjAxMzk2IDI0LjRMNy4yMTM5NiAyMy45NTAxTDYuNTYzOTYgMjUuMzVMNS42MTM5NiAyNC43NUw0LjgxMzk2IDI2LjU1TDYuNDYzOTYgMjcuNTVMNy4xMTM5NiAyNi4xNUw4LjA2Mzk2IDI2Ljc1TDguMjEzOTYgMjYuNEw4LjcxMzk2IDI3TDguNDEzOTYgMjcuNUw3LjI2Mzk2IDI2LjhMNi40NjM5NiAyOC42TDguMTEzOTYgMjkuNTVMOC44MTM5NiAyOEwxMC4wMTQgMjkuNzAwMUwxMS4xMTQgMjguNDUwMUwxMi4wMTQgMjkuNDUwMUwxMy4zMTQgMjhMMTIuMDE0IDI2LjZMMTAuOTE0IDI3Ljg1TDEwLjUxNCAyNy40NTAxTDEwLjc2NCAyNi45NTAxTDExLjkxNCAyNS42TDEyLjUxNCAyNi4zTDEzLjgxNCAyNC44NUwxMi41MTQgMjMuMzVMMTEuMzE0IDI0Ljc1TDEwLjcxNCAyNC4wNUw5LjcxMzk2IDI1LjE1TDEwLjM2NCAyMy43MDAxTDkuNzYzOTYgMjMuMzVMMTAuMTE0IDIyLjk1MDFMMTAuNDE0IDIzLjFMMTEuMjY0IDI0LjA1TDEyLjU2NCAyMi42TDExLjI2NCAyMS4xNUwxMS4xNjQgMjEuMjVMMTAuNzE0IDIxTDExLjMxNCAyMC4zNUwxMi4xNjQgMjEuM0wxMi4wMTQgMjEuNDUwMUwxMy4xNjQgMjIuNzVMMTIuOTE0IDIzLjA1TDE0LjIxNCAyNC41TDE1LjUxNCAyMy4wNUwxNC41MTQgMTkuNVoiIGZpbGw9IiM4OTY2NEMiLz4KPHBhdGggZD0iTTcuODEzODcgMTkuMDVMNi43MTM4NyAxOC4zNUw2LjExMzg3IDE5LjZMNy4yNjM4NyAyMC4zTDcuODEzODcgMTkuMDVaTTEwLjAxMzkgMTguNEwxMC4zNjM5IDE3LjY1TDkuNjYzODcgMTcuMkw5LjI2Mzg3IDE4TDEwLjAxMzkgMTguNFpNOC4zMTM4NyAyMS4xTDcuOTYzODcgMjEuOUw4LjY2Mzg3IDIyLjM1TDkuMDEzODcgMjEuNTVMOC4zMTM4NyAyMS4xWk04LjU2Mzg3IDIyLjg1TDguMjEzODcgMjMuNkw4LjkxMzg3IDI0LjA1TDkuMjYzODcgMjMuMjVMOC41NjM4NyAyMi44NVpNOS42MTM4NyAyMC43NUwxMC4zMTM5IDIxLjE1TDEwLjY2MzkgMjAuNEw5Ljk2Mzg3IDE5Ljk1TDkuNjEzODcgMjAuNzVaTTUuMjYzODcgMjIuMzVMNC41NjM4NyAyMS45NUw0LjIxMzg3IDIyLjdMNC45MTM4NyAyMy4xNUw1LjI2Mzg3IDIyLjM1Wk01LjM2Mzg3IDI1LjM1TDUuMDEzODcgMjYuMTVMNS43MTM4NyAyNi41NUw2LjA2Mzg3IDI1LjhMNS4zNjM4NyAyNS4zNVpNNi43MTM4NyAyOC4yTDcuNDEzODcgMjguNkw3Ljc2Mzg3IDI3LjhMNy4wNjM4NyAyNy40TDYuNzEzODcgMjguMlpNNi42NjM4NyAyMy4xNUw3LjAxMzg3IDIyLjM1TDYuMzEzODcgMjEuOTVMNS45NjM4NyAyMi43TDYuNjYzODcgMjMuMTVaTTYuODEzODcgMjMuN0w2LjIxMzg3IDI0Ljk1TDcuMzYzODcgMjUuNjVMNy45MTM4NyAyNC40TDYuODEzODcgMjMuN1pNOC40MTM4NyAyNi41TDkuMTEzODcgMjYuOUw5LjQ2Mzg3IDI2LjE1TDguNzYzODcgMjUuN0w4LjQxMzg3IDI2LjVaTTkuMDYzODcgMjguMzVMOS43NjM4NyAyOC43NUwxMC4xMTM5IDI4TDkuNDEzODcgMjcuNTVMOS4wNjM4NyAyOC4zNVpNMTIuMTEzOSAxNy42TDExLjU2MzkgMTYuOTVMMTEuMDEzOSAxNy42TDExLjU2MzkgMTguMkwxMi4xMTM5IDE3LjZaTTEyLjY2MzkgMTkuNTVMMTEuODEzOSAxOC41NUwxMC45MTM5IDE5LjU1TDExLjgxMzkgMjAuNTVMMTIuNjYzOSAxOS41NVpNMTIuOTEzOSAyMC40NUwxMi4zNjM5IDIxLjFMMTIuOTEzOSAyMS43TDEzLjQ2MzkgMjEuMUwxMi45MTM5IDIwLjQ1Wk0xMy4yMTM5IDIyLjdMMTMuNzYzOSAyMy4zNUwxNC4zMTM5IDIyLjdMMTMuNzYzOSAyMi4wNUwxMy4yMTM5IDIyLjdaTTExLjI2MzkgMjMuNTVMMTEuODEzOSAyNC4yTDEyLjM2MzkgMjMuNTVMMTEuODEzOSAyMi45TDExLjI2MzkgMjMuNTVaTTExLjQxMzkgMjYuN0wxMS45NjM5IDI3LjNMMTIuNTEzOSAyNi43TDExLjk2MzkgMjYuMDVMMTEuNDEzOSAyNi43Wk0xMC40NjM5IDI4LjZMMTEuMDEzOSAyOS4yNUwxMS41NjM5IDI4LjZMMTEuMDEzOSAyNy45NUwxMC40NjM5IDI4LjZaIiBmaWxsPSIjRDM5NzZFIi8+CjxwYXRoIGQ9Ik0yNS44NjM5IDQuNEwyMS4xMTM5IDEuMjVMMjAuNDYzOSAxTDIwLjY2MzkgMi45NUwxNS4wMTM5IDEuOEwxNC40MTM5IDEuOTVMOC41MTM5MiA2TDYuMTYzOTIgMTJMNC41MTM5MiAxMi41VjEzLjVMOC4wMTM5MiAxMi41TDYuMzYzOTIgMTQuMUw2Ljg2MzkyIDE2LjNMMTUuODYzOSAxNi45TDI1Ljg2MzkgNC40WiIgZmlsbD0iI0ZGRUM0MCIvPgo8cGF0aCBkPSJNMTQuMjY0IDIuMzAwMDRDMTMuMTY0IDIuMTAwMDQgMTIuMjY0IDMuMzAwMDQgMTEuMjE0IDMuNjUwMDRDMTAuMTE0IDQuMDUwMDQgMTIuMTE0IDUuNTUwMDQgMTIuNzE0IDUuNTUwMDRDMTQuNDE0IDUuNTUwMDQgMTcuNjE0IDIuOTUwMDQgMTQuMjY0IDIuMzAwMDRaTTguNzY0MDMgOC41NTAwNEM5LjE2NDAzIDcuNDAwMDQgOS4wMTQwMyA2LjAwMDA0IDcuNDY0MDMgNy4wMDAwNEM2LjE2NDAzIDcuODUwMDQgNy41NjQwMyA5LjE1MDA0IDUuOTY0MDMgOS45MDAwNEM0LjQxNDAzIDEwLjYgNS40NjQwMyAxMi42IDYuODE0MDMgMTJDOC4wMTQwMyAxMS41NSA4LjQxNDAzIDkuNzAwMDQgOC43NjQwMyA4LjU1MDA0Wk04Ljc2NDAzIDguNTUwMDRDOC43NjQwMyA4LjYwMDA0IDguNzY0MDMgOC42MDAwNCA4Ljc2NDAzIDguNTUwMDRaTTE1LjM2NCAxNS42NUMxNS42MTQgMTUuOSAxNS40NjQgMTUuOCAxNS4zNjQgMTUuNjVDMTMuNTE0IDEzLjg1IDEwLjgxNCAxOC4xNSAxMS40MTQgMTguOTVDMTMuNzY0IDIyLjA1IDE2LjQ2NCAxNi44IDE1LjM2NCAxNS42NVoiIGZpbGw9IiM4M0JGNEYiLz4KPHBhdGggZD0iTTkuNjY0MDEgMTIuNzVMOC4zNjQwMSAxNS44TDExLjY2NCAxN0wxMy41MTQgMTMuNjVMOS42NjQwMSAxMi43NVoiIGZpbGw9IiNFRDRDNUMiLz4KPHBhdGggZD0iTTcuODY0MDEgMTIuMTVMOS41NjQwMSAxMy41TDEyLjQxNCAxMS41TDEwLjU2NCAxMEw3Ljg2NDAxIDEyLjE1Wk0xMy40NjQgOS43NUwxNS43NjQgMTEuNUwxOC43NjQgOS43TDE3LjIxNCA3LjZMMTMuNDY0IDkuNzVaTTEwLjk2NCA1Ljc1TDExLjE2NCA4LjE1TDE0LjQxNCA2LjY1TDE0LjI2NCA0Ljk1TDEyLjc2NCA0LjFMMTAuOTY0IDUuNzVaTTE3LjcxNCAxLjZMMTYuODY0IDQuMTVMMjAuNTE0IDQuNUwyMC4zMTQgMi4wNUwxNy43MTQgMS42Wk0yMS41MTQgMS41TDIxLjcxNCA0TDI1LjA2NCAzLjY1TDI1LjQ2NCAyLjFMMjEuNTE0IDEuNVoiIGZpbGw9IiNFRDRDNUMiLz4KPHBhdGggZD0iTTIwLjYxNDEgNS44NDk5NkMyMS45NjQxIDYuMTk5OTYgMjAuMDY0MSA1Ljc0OTk2IDIwLjYxNDEgNS44NDk5NloiIGZpbGw9IiM4M0JGNEYiLz4KPHBhdGggZD0iTTIxLjAxNCA2QzIwLjU2NCA1LjY1IDE5LjY2NCA3LjEgMTkuMTY0IDcuNEMxOC41NjQgNy44IDEzLjgxNCA4Ljk1IDE3LjkxNCAxMEMxOS4yMTQgMTAuMzUgMjIuMDE0IDYuOCAyMS4wMTQgNlpNMjMuMTY0IDQuODVDMjMuNTY0IDUuMSAyMi43NjQgNC42IDIzLjE2NCA0Ljg1Wk0yNC42NjQgMi44NUMyMy44MTQgNCAyMy45NjQgMS41NSAyMi43MTQgMi42NUMyMS45NjQgMy4zIDIyLjM2NCA0LjQgMjMuMTY0IDQuODVDMjMuODY0IDUuMyAyNi4zMTQgNS4wNSAyNi40NjQgMy45QzI2LjU2NCAzLjE1IDI1LjI2NCAyLjA1IDI0LjY2NCAyLjg1Wk02LjUxNDAyIDEzQzUuODE0MDIgMTMgNC4zNjQwMiAxNC44NSA0LjM2NDAyIDE0Ljg1QzMuMDY0MDIgMTYuMjUgNS43NjQwMiAxNi4yNSA1LjgxNDAyIDE2LjVDNS40MTQwMiAxNi44IDUuMDE0MDIgMTcuMSA0LjU2NDAyIDE3LjM1QzQuNTY0MDIgMTguMzUgNi42NjQwMiAxNy4yNSA2LjUxNDAyIDE3LjM1QzUuMzE0MDIgMTkuNCAxMC4yNjQgMTcgMTAuNTY0IDE2LjhDMTIuMjY0IDE1Ljc1IDkuNTE0MDIgMTMgNi41MTQwMiAxM1pNMTIuMDE0IDEwLjk1QzEyLjQxNCAxMC45NSAxMS4zMTQgMTAuOSAxMi4wMTQgMTAuOTVaIiBmaWxsPSIjODNCRjRGIi8+CjxwYXRoIGQ9Ik0xMy4yMTQxIDguMTQ5OTZDMTEuNTE0MSA0Ljk5OTk1IDExLjMxNDEgOC4xNDk5NiAxMS4wMTQxIDguNDk5OTZDMTAuODE0MSA4LjY5OTk2IDguNTE0MDcgOC40OTk5NiA5LjU2NDA3IDkuNzQ5OTZDMTAuMDE0MSAxMC4zIDExLjM2NDEgMTEuMSAxMi4wNjQxIDEwLjlDMTMuNTE0MSAxMC41IDEzLjU2NDEgOC43OTk5NiAxMy4yMTQxIDguMTQ5OTZaIiBmaWxsPSIjODNCRjRGIi8+CjxwYXRoIGQ9Ik0xMy4zNjM5IDEyTDcuOTEzOTIgMTIuN0w2LjUxMzkyIDEzLjc1TDcuMTEzOTIgMTQuMjVMMTIuNTEzOSAxMi41TDEzLjg2MzkgMTIuNEwxMy4zNjM5IDEyWk0xNy41MTM5IDYuMzVMMTUuMTYzOSA2LjE1TDEwLjAxMzkgNy44NUwxMC44MTM5IDguNUwxNS4wNjM5IDcuMTVMMTcuNTYzOSA2LjlMMTcuNTEzOSA2LjM1Wk0xNC41NjM5IDEwLjZMMTQuMDEzOSAxMC42NUwxNS4wNjM5IDEzLjJMMTYuNjEzOSAxMy41TDE3LjAxMzkgMTIuNkwxNi4xMTM5IDEyLjI1TDE0LjU2MzkgMTAuNlpNMTMuNzYzOSAxMy44NUwxNC44NjM5IDE2Ljk1TDE0LjA2MzkgMTcuNUwxMy4xNjM5IDE0Ljc1TDEzLjc2MzkgMTMuODVaTTIyLjMxMzkgMy42NUwyMS4yNjM5IDMuMzVMMjAuNDYzOSAxTDE5LjgxMzkgMS4wNUwyMC42MTM5IDMuOEwyMS45NjM5IDQuMzVMMjIuMzEzOSAzLjY1Wk0xNy44MTM5IDIuNjVMMTQuNDEzOSAxLjk1TDE0LjA2MzkgMi41TDE3LjY2MzkgMy40NUwxNy44MTM5IDIuNjVaIiBmaWxsPSIjRkZGRkQ0Ii8+CjxwYXRoIGQ9Ik0xMS4yMTM5IDMwLjk1QzExLjIxMzkgMzAuOTUgMTMuMzEzOSAzMC45NSAxNC41MTM5IDIyLjg1QzE1Ljc2MzkgMTQuNjUgMjEuMjYzOSAzLjU5OTk4IDI5LjgxMzkgMy41OTk5OEMzMi43NjM5IDMuNTk5OTggMzQuODEzOSA1LjU0OTk4IDMzLjY2MzkgMTYuMkMzMy41MTM5IDE4LjA1IDEzLjgxMzkgMzAuOTUgMTEuMjEzOSAzMC45NVoiIGZpbGw9IiNGQkJGNjciLz4KPHBhdGggZD0iTTI5Ljg2MzkgMy4wOTk5OEMxOS4wMTM5IDMuMDk5OTggMTUuNjYzOSAxNS40IDE0LjUxMzkgMjIuODVDMTMuMjYzOSAzMC45NSA5Ljk2Mzg3IDMwLjk1IDkuOTYzODcgMzAuOTVDOS45NjM4NyAzMC45NSAxMi4wNjM5IDMxLjIgMTIuNjYzOSAzMC43QzEzLjU2MzkgMjkuOTUgMTQuNjEzOSAyOCAxNS4yNjM5IDIzLjdDMTYuNDEzOSAxNi4yIDIwLjQxMzkgMy44NDk5OCAzMC4xMTM5IDMuODQ5OThDMzIuODYzOSAzLjg0OTk4IDMzLjc2MzkgNy43OTk5OCAzMy43NjM5IDcuNzk5OThDMzMuNzYzOSA3Ljc5OTk4IDMzLjMxMzkgMy4wOTk5OCAyOS44NjM5IDMuMDk5OThaIiBmaWxsPSIjRkRERkIzIi8+CjxwYXRoIGQ9Ik0yMi42MTQgMjAuNEwyMy4xMTQgMTkuOUwyMy42MTQgMjAuNEwyMy4xMTQgMjAuOTVMMjIuNjE0IDIwLjRaTTIzLjI2NCAxMy40TDIzLjc2NCAxMi44NUwyNC4yNjQgMTMuNEwyMy43NjQgMTMuOTVMMjMuMjY0IDEzLjRaTTMxLjA2NCAxMy40TDMxLjU2NCAxMi44NUwzMi4wNjQgMTMuNEwzMS41NjQgMTMuOTVMMzEuMDY0IDEzLjRaTTMwLjExNCA3Ljg5OTk4TDMwLjYxNCA3LjM0OTk4TDMxLjExNCA3Ljg5OTk4TDMwLjYxNCA4LjM5OTk4TDMwLjExNCA3Ljg5OTk4WiIgZmlsbD0iI0QzOTc2RSIvPgo8cGF0aCBkPSJNMjcuMTY0IDE2LjdMMjYuNjY0IDE3LjJMMjcuMTY0IDE3Ljc1TDI3LjY2NCAxNy4yTDI3LjE2NCAxNi43Wk0yOC4zNjQgMTAuNEwyNy44NjQgMTAuOUwyOC4zNjQgMTEuNDVMMjguODY0IDEwLjlMMjguMzY0IDEwLjRaTTI0LjUxNCA4LjVMMjQuMDE0IDkuMDVMMjQuNTE0IDkuNkwyNS4wMTQgOS4wNUwyNC41MTQgOC41Wk0xOS43NjQgMTYuNEwxOS4yNjQgMTYuOTVMMTkuNzY0IDE3LjQ1TDIwLjI2NCAxNi45NUwxOS43NjQgMTYuNFpNMTguNjE0IDIzLjJMMTguMTE0IDIzLjc1TDE4LjYxNCAyNC4yNUwxOS4xMTQgMjMuNzVMMTguNjE0IDIzLjJaIiBmaWxsPSIjRkRERkIzIi8+CjwvZz4KPGRlZnM+CjxmaWx0ZXIgaWQ9ImZpbHRlcjBfZF8xNDdfMTMiIHg9Ii0wLjk4NjA4NCIgeT0iMCIgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBmaWx0ZXJVbml0cz0idXNlclNwYWNlT25Vc2UiIGNvbG9yLWludGVycG9sYXRpb24tZmlsdGVycz0ic1JHQiI+CjxmZUZsb29kIGZsb29kLW9wYWNpdHk9IjAiIHJlc3VsdD0iQmFja2dyb3VuZEltYWdlRml4Ii8+CjxmZUNvbG9yTWF0cml4IGluPSJTb3VyY2VBbHBoYSIgdHlwZT0ibWF0cml4IiB2YWx1ZXM9IjAgMCAwIDAgMCAwIDAgMCAwIDAgMCAwIDAgMCAwIDAgMCAwIDEyNyAwIiByZXN1bHQ9ImhhcmRBbHBoYSIvPgo8ZmVPZmZzZXQgZHk9IjQiLz4KPGZlR2F1c3NpYW5CbHVyIHN0ZERldmlhdGlvbj0iMiIvPgo8ZmVDb21wb3NpdGUgaW4yPSJoYXJkQWxwaGEiIG9wZXJhdG9yPSJvdXQiLz4KPGZlQ29sb3JNYXRyaXggdHlwZT0ibWF0cml4IiB2YWx1ZXM9IjAgMCAwIDAgMCAwIDAgMCAwIDAgMCAwIDAgMCAwIDAgMCAwIDAuMjUgMCIvPgo8ZmVCbGVuZCBtb2RlPSJub3JtYWwiIGluMj0iQmFja2dyb3VuZEltYWdlRml4IiByZXN1bHQ9ImVmZmVjdDFfZHJvcFNoYWRvd18xNDdfMTMiLz4KPGZlQmxlbmQgbW9kZT0ibm9ybWFsIiBpbj0iU291cmNlR3JhcGhpYyIgaW4yPSJlZmZlY3QxX2Ryb3BTaGFkb3dfMTQ3XzEzIiByZXN1bHQ9InNoYXBlIi8+CjwvZmlsdGVyPgo8L2RlZnM+Cjwvc3ZnPgo=");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  box-shadow: none;
+}
+.score-slider::-moz-range-thumb {
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzgiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCAzOCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGcgc3R5bGU9Im1peC1ibGVuZC1tb2RlOmRpZmZlcmVuY2UiIGZpbHRlcj0idXJsKCNmaWx0ZXIwX2RfMTQ3XzEzKSI+CjxwYXRoIGQ9Ik0xMS4yMTM5IDMwLjk1QzguMTYzOSAzMC45NSA1LjIxMzkgMzAuOTUgNC4wNjM5IDE1LjU1QzIuNTEzOSAtNS40NTAwNCAzMC4xMTM5IDIuMTk5OTYgMzAuMTEzOSAxNC4zQzMwLjExMzkgMjAuOTUgMTEuMjEzOSAzMC45NSAxMS4yMTM5IDMwLjk1WiIgZmlsbD0iI0QzOTc2RSIvPgo8cGF0aCBvcGFjaXR5PSIwLjUiIGQ9Ik00LjgxMzk2IDE1LjU1QzQuMTYzOTYgNi41NTAwMiA4LjgxMzk2IDIuODUwMDIgMTQuNDE0IDIuNDUwMDJWMi40MDAwMkM4LjUxMzk2IDIuNTAwMDIgMy4zNjM5NiA2LjE1MDAyIDQuMDYzOTYgMTUuNTVDNS4xMTM5NiAyOS44IDcuNzYzOTYgMzAuOTUgMTAuNTE0IDMwLjk1QzcuOTYzOTYgMzAuNSA1Ljc2Mzk2IDI4LjU1IDQuODEzOTYgMTUuNTVaIiBmaWxsPSJ3aGl0ZSIvPgo8cGF0aCBkPSJNMTIuNjY0IDEyLjc1TDUuMTY0MDEgMTYuMDVMNC4xMTQwMSAxOC41TDUuNDY0MDEgMTkuM0w0LjUxNDAxIDIxLjQ1TDUuMjY0MDEgMjEuOUw0LjIxNDAxIDI0LjE1TDUuODY0MDEgMjUuMTVMNC45MTQwMSAyNy4zTDYuODY0MDEgMjguNUw2LjUxNDAxIDI5LjNMOC43NjQwMSAzMC42NUw5LjIxNDAxIDI5LjY1TDEwLjMxNCAzMC45TDEyLjExNCAzMC40NUwxNy45NjQgMTkuMkwxMi42NjQgMTIuNzVaIiBmaWxsPSIjNTk0NjQwIi8+CjxwYXRoIGQ9Ik0xNC41MTQgMTkuNUwxNi4wMTQgMTcuNUw0Ljg2Mzk2IDE2LjA1TDQuMDYzOTYgMTcuODVMNS43MTM5NiAxOC44NUw2LjIxMzk2IDE3Ljc1TDcuMDYzOTYgMTguMjVMNi40MTM5NiAxOS42NUw1LjI2Mzk2IDE4Ljk1MDFMNC40NjM5NiAyMC43NUw2LjExMzk2IDIxLjcwMDFMNi43NjM5NiAyMC4yMDAxTDcuODYzOTYgMjAuODVMNy44MTM5NiAyMUw4LjgxMzk2IDIxLjZMOC41MTM5NiAyMS45TDYuOTYzOTYgMjFMNi4yNjM5NiAyMi41TDQuOTEzOTYgMjEuNzAwMUw0LjExMzk2IDIzLjVMNS43NjM5NiAyNC40NTAxTDYuNDEzOTYgMjNMNy43NjM5NiAyMy44TDguMTYzOTYgMjIuODVMOC41MTM5NiAyMy4yNUw4LjAxMzk2IDI0LjRMNy4yMTM5NiAyMy45NTAxTDYuNTYzOTYgMjUuMzVMNS42MTM5NiAyNC43NUw0LjgxMzk2IDI2LjU1TDYuNDYzOTYgMjcuNTVMNy4xMTM5NiAyNi4xNUw4LjA2Mzk2IDI2Ljc1TDguMjEzOTYgMjYuNEw4LjcxMzk2IDI3TDguNDEzOTYgMjcuNUw3LjI2Mzk2IDI2LjhMNi40NjM5NiAyOC42TDguMTEzOTYgMjkuNTVMOC44MTM5NiAyOEwxMC4wMTQgMjkuNzAwMUwxMS4xMTQgMjguNDUwMUwxMi4wMTQgMjkuNDUwMUwxMy4zMTQgMjhMMTIuMDE0IDI2LjZMMTAuOTE0IDI3Ljg1TDEwLjUxNCAyNy40NTAxTDEwLjc2NCAyNi45NTAxTDExLjkxNCAyNS42TDEyLjUxNCAyNi4zTDEzLjgxNCAyNC44NUwxMi41MTQgMjMuMzVMMTEuMzE0IDI0Ljc1TDEwLjcxNCAyNC4wNUw5LjcxMzk2IDI1LjE1TDEwLjM2NCAyMy43MDAxTDkuNzYzOTYgMjMuMzVMMTAuMTE0IDIyLjk1MDFMMTAuNDE0IDIzLjFMMTEuMjY0IDI0LjA1TDEyLjU2NCAyMi42TDExLjI2NCAyMS4xNUwxMS4xNjQgMjEuMjVMMTAuNzE0IDIxTDExLjMxNCAyMC4zNUwxMi4xNjQgMjEuM0wxMi4wMTQgMjEuNDUwMUwxMy4xNjQgMjIuNzVMMTIuOTE0IDIzLjA1TDE0LjIxNCAyNC41TDE1LjUxNCAyMy4wNUwxNC41MTQgMTkuNVoiIGZpbGw9IiM4OTY2NEMiLz4KPHBhdGggZD0iTTcuODEzODcgMTkuMDVMNi43MTM4NyAxOC4zNUw2LjExMzg3IDE5LjZMNy4yNjM4NyAyMC4zTDcuODEzODcgMTkuMDVaTTEwLjAxMzkgMTguNEwxMC4zNjM5IDE3LjY1TDkuNjYzODcgMTcuMkw5LjI2Mzg3IDE4TDEwLjAxMzkgMTguNFpNOC4zMTM4NyAyMS4xTDcuOTYzODcgMjEuOUw4LjY2Mzg3IDIyLjM1TDkuMDEzODcgMjEuNTVMOC4zMTM4NyAyMS4xWk04LjU2Mzg3IDIyLjg1TDguMjEzODcgMjMuNkw4LjkxMzg3IDI0LjA1TDkuMjYzODcgMjMuMjVMOC41NjM4NyAyMi44NVpNOS42MTM4NyAyMC43NUwxMC4zMTM5IDIxLjE1TDEwLjY2MzkgMjAuNEw5Ljk2Mzg3IDE5Ljk1TDkuNjEzODcgMjAuNzVaTTUuMjYzODcgMjIuMzVMNC41NjM4NyAyMS45NUw0LjIxMzg3IDIyLjdMNC45MTM4NyAyMy4xNUw1LjI2Mzg3IDIyLjM1Wk01LjM2Mzg3IDI1LjM1TDUuMDEzODcgMjYuMTVMNS43MTM4NyAyNi41NUw2LjA2Mzg3IDI1LjhMNS4zNjM4NyAyNS4zNVpNNi43MTM4NyAyOC4yTDcuNDEzODcgMjguNkw3Ljc2Mzg3IDI3LjhMNy4wNjM4NyAyNy40TDYuNzEzODcgMjguMlpNNi42NjM4NyAyMy4xNUw3LjAxMzg3IDIyLjM1TDYuMzEzODcgMjEuOTVMNS45NjM4NyAyMi43TDYuNjYzODcgMjMuMTVaTTYuODEzODcgMjMuN0w2LjIxMzg3IDI0Ljk1TDcuMzYzODcgMjUuNjVMNy45MTM4NyAyNC40TDYuODEzODcgMjMuN1pNOC40MTM4NyAyNi41TDkuMTEzODcgMjYuOUw5LjQ2Mzg3IDI2LjE1TDguNzYzODcgMjUuN0w4LjQxMzg3IDI2LjVaTTkuMDYzODcgMjguMzVMOS43NjM4NyAyOC43NUwxMC4xMTM5IDI4TDkuNDEzODcgMjcuNTVMOS4wNjM4NyAyOC4zNVpNMTIuMTEzOSAxNy42TDExLjU2MzkgMTYuOTVMMTEuMDEzOSAxNy42TDExLjU2MzkgMTguMkwxMi4xMTM5IDE3LjZaTTEyLjY2MzkgMTkuNTVMMTEuODEzOSAxOC41NUwxMC45MTM5IDE5LjU1TDExLjgxMzkgMjAuNTVMMTIuNjYzOSAxOS41NVpNMTIuOTEzOSAyMC40NUwxMi4zNjM5IDIxLjFMMTIuOTEzOSAyMS43TDEzLjQ2MzkgMjEuMUwxMi45MTM5IDIwLjQ1Wk0xMy4yMTM5IDIyLjdMMTMuNzYzOSAyMy4zNUwxNC4zMTM5IDIyLjdMMTMuNzYzOSAyMi4wNUwxMy4yMTM5IDIyLjdaTTExLjI2MzkgMjMuNTVMMTEuODEzOSAyNC4yTDEyLjM2MzkgMjMuNTVMMTEuODEzOSAyMi45TDExLjI2MzkgMjMuNTVaTTExLjQxMzkgMjYuN0wxMS45NjM5IDI3LjNMMTIuNTEzOSAyNi43TDExLjk2MzkgMjYuMDVMMTEuNDEzOSAyNi43Wk0xMC40NjM5IDI4LjZMMTEuMDEzOSAyOS4yNUwxMS41NjM5IDI4LjZMMTEuMDEzOSAyNy45NUwxMC40NjM5IDI4LjZaIiBmaWxsPSIjRDM5NzZFIi8+CjxwYXRoIGQ9Ik0yNS44NjM5IDQuNEwyMS4xMTM5IDEuMjVMMjAuNDYzOSAxTDIwLjY2MzkgMi45NUwxNS4wMTM5IDEuOEwxNC40MTM5IDEuOTVMOC41MTM5MiA2TDYuMTYzOTIgMTJMNC41MTM5MiAxMi41VjEzLjVMOC4wMTM5MiAxMi41TDYuMzYzOTIgMTQuMUw2Ljg2MzkyIDE2LjNMMTUuODYzOSAxNi45TDI1Ljg2MzkgNC40WiIgZmlsbD0iI0ZGRUM0MCIvPgo8cGF0aCBkPSJNMTQuMjY0IDIuMzAwMDRDMTMuMTY0IDIuMTAwMDQgMTIuMjY0IDMuMzAwMDQgMTEuMjE0IDMuNjUwMDRDMTAuMTE0IDQuMDUwMDQgMTIuMTE0IDUuNTUwMDQgMTIuNzE0IDUuNTUwMDRDMTQuNDE0IDUuNTUwMDQgMTcuNjE0IDIuOTUwMDQgMTQuMjY0IDIuMzAwMDRaTTguNzY0MDMgOC41NTAwNEM5LjE2NDAzIDcuNDAwMDQgOS4wMTQwMyA2LjAwMDA0IDcuNDY0MDMgNy4wMDAwNEM2LjE2NDAzIDcuODUwMDQgNy41NjQwMyA5LjE1MDA0IDUuOTY0MDMgOS45MDAwNEM0LjQxNDAzIDEwLjYgNS40NjQwMyAxMi42IDYuODE0MDMgMTJDOC4wMTQwMyAxMS41NSA4LjQxNDAzIDkuNzAwMDQgOC43NjQwMyA4LjU1MDA0Wk04Ljc2NDAzIDguNTUwMDRDOC43NjQwMyA4LjYwMDA0IDguNzY0MDMgOC42MDAwNCA4Ljc2NDAzIDguNTUwMDRaTTE1LjM2NCAxNS42NUMxNS42MTQgMTUuOSAxNS40NjQgMTUuOCAxNS4zNjQgMTUuNjVDMTMuNTE0IDEzLjg1IDEwLjgxNCAxOC4xNSAxMS40MTQgMTguOTVDMTMuNzY0IDIyLjA1IDE2LjQ2NCAxNi44IDE1LjM2NCAxNS42NVoiIGZpbGw9IiM4M0JGNEYiLz4KPHBhdGggZD0iTTkuNjY0MDEgMTIuNzVMOC4zNjQwMSAxNS44TDExLjY2NCAxN0wxMy41MTQgMTMuNjVMOS42NjQwMSAxMi43NVoiIGZpbGw9IiNFRDRDNUMiLz4KPHBhdGggZD0iTTcuODY0MDEgMTIuMTVMOS41NjQwMSAxMy41TDEyLjQxNCAxMS41TDEwLjU2NCAxMEw3Ljg2NDAxIDEyLjE1Wk0xMy40NjQgOS43NUwxNS43NjQgMTEuNUwxOC43NjQgOS43TDE3LjIxNCA3LjZMMTMuNDY0IDkuNzVaTTEwLjk2NCA1Ljc1TDExLjE2NCA4LjE1TDE0LjQxNCA2LjY1TDE0LjI2NCA0Ljk1TDEyLjc2NCA0LjFMMTAuOTY0IDUuNzVaTTE3LjcxNCAxLjZMMTYuODY0IDQuMTVMMjAuNTE0IDQuNUwyMC4zMTQgMi4wNUwxNy43MTQgMS42Wk0yMS41MTQgMS41TDIxLjcxNCA0TDI1LjA2NCAzLjY1TDI1LjQ2NCAyLjFMMjEuNTE0IDEuNVoiIGZpbGw9IiNFRDRDNUMiLz4KPHBhdGggZD0iTTIwLjYxNDEgNS44NDk5NkMyMS45NjQxIDYuMTk5OTYgMjAuMDY0MSA1Ljc0OTk2IDIwLjYxNDEgNS44NDk5NloiIGZpbGw9IiM4M0JGNEYiLz4KPHBhdGggZD0iTTIxLjAxNCA2QzIwLjU2NCA1LjY1IDE5LjY2NCA3LjEgMTkuMTY0IDcuNEMxOC41NjQgNy44IDEzLjgxNCA4Ljk1IDE3LjkxNCAxMEMxOS4yMTQgMTAuMzUgMjIuMDE0IDYuOCAyMS4wMTQgNlpNMjMuMTY0IDQuODVDMjMuNTY0IDUuMSAyMi43NjQgNC42IDIzLjE2NCA0Ljg1Wk0yNC42NjQgMi44NUMyMy44MTQgNCAyMy45NjQgMS41NSAyMi43MTQgMi42NUMyMS45NjQgMy4zIDIyLjM2NCA0LjQgMjMuMTY0IDQuODVDMjMuODY0IDUuMyAyNi4zMTQgNS4wNSAyNi40NjQgMy45QzI2LjU2NCAzLjE1IDI1LjI2NCAyLjA1IDI0LjY2NCAyLjg1Wk02LjUxNDAyIDEzQzUuODE0MDIgMTMgNC4zNjQwMiAxNC44NSA0LjM2NDAyIDE0Ljg1QzMuMDY0MDIgMTYuMjUgNS43NjQwMiAxNi4yNSA1LjgxNDAyIDE2LjVDNS40MTQwMiAxNi44IDUuMDE0MDIgMTcuMSA0LjU2NDAyIDE3LjM1QzQuNTY0MDIgMTguMzUgNi42NjQwMiAxNy4yNSA2LjUxNDAyIDE3LjM1QzUuMzE0MDIgMTkuNCAxMC4yNjQgMTcgMTAuNTY0IDE2LjhDMTIuMjY0IDE1Ljc1IDkuNTE0MDIgMTMgNi41MTQwMiAxM1pNMTIuMDE0IDEwLjk1QzEyLjQxNCAxMC45NSAxMS4zMTQgMTAuOSAxMi4wMTQgMTAuOTVaIiBmaWxsPSIjODNCRjRGIi8+CjxwYXRoIGQ9Ik0xMy4yMTQxIDguMTQ5OTZDMTEuNTE0MSA0Ljk5OTk1IDExLjMxNDEgOC4xNDk5NiAxMS4wMTQxIDguNDk5OTZDMTAuODE0MSA4LjY5OTk2IDguNTE0MDcgOC40OTk5NiA5LjU2NDA3IDkuNzQ5OTZDMTAuMDE0MSAxMC4zIDExLjM2NDEgMTEuMSAxMi4wNjQxIDEwLjlDMTMuNTE0MSAxMC41IDEzLjU2NDEgOC43OTk5NiAxMy4yMTQxIDguMTQ5OTZaIiBmaWxsPSIjODNCRjRGIi8+CjxwYXRoIGQ9Ik0xMy4zNjM5IDEyTDcuOTEzOTIgMTIuN0w2LjUxMzkyIDEzLjc1TDcuMTEzOTIgMTQuMjVMMTIuNTEzOSAxMi41TDEzLjg2MzkgMTIuNEwxMy4zNjM5IDEyWk0xNy41MTM5IDYuMzVMMTUuMTYzOSA2LjE1TDEwLjAxMzkgNy44NUwxMC44MTM5IDguNUwxNS4wNjM5IDcuMTVMMTcuNTYzOSA2LjlMMTcuNTEzOSA2LjM1Wk0xNC41NjM5IDEwLjZMMTQuMDEzOSAxMC42NUwxNS4wNjM5IDEzLjJMMTYuNjEzOSAxMy41TDE3LjAxMzkgMTIuNkwxNi4xMTM5IDEyLjI1TDE0LjU2MzkgMTAuNlpNMTMuNzYzOSAxMy44NUwxNC44NjM5IDE2Ljk1TDE0LjA2MzkgMTcuNUwxMy4xNjM5IDE0Ljc1TDEzLjc2MzkgMTMuODVaTTIyLjMxMzkgMy42NUwyMS4yNjM5IDMuMzVMMjAuNDYzOSAxTDE5LjgxMzkgMS4wNUwyMC42MTM5IDMuOEwyMS45NjM5IDQuMzVMMjIuMzEzOSAzLjY1Wk0xNy44MTM5IDIuNjVMMTQuNDEzOSAxLjk1TDE0LjA2MzkgMi41TDE3LjY2MzkgMy40NUwxNy44MTM5IDIuNjVaIiBmaWxsPSIjRkZGRkQ0Ii8+CjxwYXRoIGQ9Ik0xMS4yMTM5IDMwLjk1QzExLjIxMzkgMzAuOTUgMTMuMzEzOSAzMC45NSAxNC41MTM5IDIyLjg1QzE1Ljc2MzkgMTQuNjUgMjEuMjYzOSAzLjU5OTk4IDI5LjgxMzkgMy41OTk5OEMzMi43NjM5IDMuNTk5OTggMzQuODEzOSA1LjU0OTk4IDMzLjY2MzkgMTYuMkMzMy41MTM5IDE4LjA1IDEzLjgxMzkgMzAuOTUgMTEuMjEzOSAzMC45NVoiIGZpbGw9IiNGQkJGNjciLz4KPHBhdGggZD0iTTI5Ljg2MzkgMy4wOTk5OEMxOS4wMTM5IDMuMDk5OTggMTUuNjYzOSAxNS40IDE0LjUxMzkgMjIuODVDMTMuMjYzOSAzMC45NSA5Ljk2Mzg3IDMwLjk1IDkuOTYzODcgMzAuOTVDOS45NjM4NyAzMC45NSAxMi4wNjM5IDMxLjIgMTIuNjYzOSAzMC43QzEzLjU2MzkgMjkuOTUgMTQuNjEzOSAyOCAxNS4yNjM5IDIzLjdDMTYuNDEzOSAxNi4yIDIwLjQxMzkgMy44NDk5OCAzMC4xMTM5IDMuODQ5OThDMzIuODYzOSAzLjg0OTk4IDMzLjc2MzkgNy43OTk5OCAzMy43NjM5IDcuNzk5OThDMzMuNzYzOSA3Ljc5OTk4IDMzLjMxMzkgMy4wOTk5OCAyOS44NjM5IDMuMDk5OThaIiBmaWxsPSIjRkRERkIzIi8+CjxwYXRoIGQ9Ik0yMi42MTQgMjAuNEwyMy4xMTQgMTkuOUwyMy42MTQgMjAuNEwyMy4xMTQgMjAuOTVMMjIuNjE0IDIwLjRaTTIzLjI2NCAxMy40TDIzLjc2NCAxMi44NUwyNC4yNjQgMTMuNEwyMy43NjQgMTMuOTVMMjMuMjY0IDEzLjRaTTMxLjA2NCAxMy40TDMxLjU2NCAxMi44NUwzMi4wNjQgMTMuNEwzMS41NjQgMTMuOTVMMzEuMDY0IDEzLjRaTTMwLjExNCA3Ljg5OTk4TDMwLjYxNCA3LjM0OTk4TDMxLjExNCA3Ljg5OTk4TDMwLjYxNCA4LjM5OTk4TDMwLjExNCA3Ljg5OTk4WiIgZmlsbD0iI0QzOTc2RSIvPgo8cGF0aCBkPSJNMjcuMTY0IDE2LjdMMjYuNjY0IDE3LjJMMjcuMTY0IDE3Ljc1TDI3LjY2NCAxNy4yTDI3LjE2NCAxNi43Wk0yOC4zNjQgMTAuNEwyNy44NjQgMTAuOUwyOC4zNjQgMTEuNDVMMjguODY0IDEwLjlMMjguMzY0IDEwLjRaTTI0LjUxNCA4LjVMMjQuMDE0IDkuMDVMMjQuNTE0IDkuNkwyNS4wMTQgOS4wNUwyNC41MTQgOC41Wk0xOS43NjQgMTYuNEwxOS4yNjQgMTYuOTVMMTkuNzY0IDE3LjQ1TDIwLjI2NCAxNi45NUwxOS43NjQgMTYuNFpNMTguNjE0IDIzLjJMMTguMTE0IDIzLjc1TDE4LjYxNCAyNC4yNUwxOS4xMTQgMjMuNzVMMTguNjE0IDIzLjJaIiBmaWxsPSIjRkRERkIzIi8+CjwvZz4KPGRlZnM+CjxmaWx0ZXIgaWQ9ImZpbHRlcjBfZF8xNDdfMTMiIHg9Ii0wLjk4NjA4NCIgeT0iMCIgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBmaWx0ZXJVbml0cz0idXNlclNwYWNlT25Vc2UiIGNvbG9yLWludGVycG9sYXRpb24tZmlsdGVycz0ic1JHQiI+CjxmZUZsb29kIGZsb29kLW9wYWNpdHk9IjAiIHJlc3VsdD0iQmFja2dyb3VuZEltYWdlRml4Ii8+CjxmZUNvbG9yTWF0cml4IGluPSJTb3VyY2VBbHBoYSIgdHlwZT0ibWF0cml4IiB2YWx1ZXM9IjAgMCAwIDAgMCAwIDAgMCAwIDAgMCAwIDAgMCAwIDAgMCAwIDEyNyAwIiByZXN1bHQ9ImhhcmRBbHBoYSIvPgo8ZmVPZmZzZXQgZHk9IjQiLz4KPGZlR2F1c3NpYW5CbHVyIHN0ZERldmlhdGlvbj0iMiIvPgo8ZmVDb21wb3NpdGUgaW4yPSJoYXJkQWxwaGEiIG9wZXJhdG9yPSJvdXQiLz4KPGZlQ29sb3JNYXRyaXggdHlwZT0ibWF0cml4IiB2YWx1ZXM9IjAgMCAwIDAgMCAwIDAgMCAwIDAgMCAwIDAgMCAwIDAgMCAwIDAuMjUgMCIvPgo8ZmVCbGVuZCBtb2RlPSJub3JtYWwiIGluMj0iQmFja2dyb3VuZEltYWdlRml4IiByZXN1bHQ9ImVmZmVjdDFfZHJvcFNoYWRvd18xNDdfMTMiLz4KPGZlQmxlbmQgbW9kZT0ibm9ybWFsIiBpbj0iU291cmNlR3JhcGhpYyIgaW4yPSJlZmZlY3QxX2Ryb3BTaGFkb3dfMTQ3XzEzIiByZXN1bHQ9InNoYXBlIi8+CjwvZmlsdGVyPgo8L2RlZnM+Cjwvc3ZnPgo=");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+.score-slider:focus { outline: 2px solid var(--gold); outline-offset: 2px; }
+
+.margarita-row .score-label { color: var(--verde); }
+.margarita-row .score-value { background: var(--verde); }
+.margarita-row { border-top: 2px solid var(--verde); padding-top: 0.7rem; margin-top: 0.3rem; }
+
+/* ================ NOTES ================ */
+.notes-section { margin-bottom: 1rem; }
+.notes-label {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--jet);
+  margin-bottom: 0.4rem;
+}
+
+.notes-input {
+  width: 100%;
+  background: var(--bone);
+  border: 2px solid var(--jet);
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  padding: 0.6rem;
+  resize: vertical;
+  min-height: 70px;
+  color: var(--jet);
+  outline: none;
+}
+.notes-input:focus { border-color: var(--crimson); }
+
+/* ================ ACTIONS ================ */
+.stop-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  border-top: 2px dashed var(--crimson);
+  padding-top: 0.85rem;
+}
+
+.nav-btns { display: flex; gap: 0.4rem; }
+
+.btn {
+  font-family: var(--font-display);
+  font-size: 0.82rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  padding: 0.55rem 0.95rem;
+  cursor: pointer;
+  border: 2px solid var(--jet);
+  background: var(--bone);
+  color: var(--jet);
+  transition: transform 0.08s;
+}
+.btn:active { transform: translate(1px, 1px); }
+.btn-danger { background: var(--crimson); color: var(--bone); border-color: var(--bone); }
+.btn-primary { background: var(--gold); color: var(--jet); }
+.btn-jet { background: var(--jet); color: var(--gold); border-color: var(--gold); }
+
+.actions-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  margin-top: 0.5rem;
+}
+
+.add-stop-btn {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  background: var(--jet);
+  color: var(--gold);
+  border: 3px dashed var(--gold);
+  padding: 0.85rem;
+  cursor: pointer;
+}
+.add-stop-btn:active { transform: translate(1px, 1px); }
+
+.reveal-btn {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  background: linear-gradient(180deg, var(--gold) 0%, var(--gold-dark) 100%);
+  color: var(--jet);
+  border: 4px solid var(--jet);
+  padding: 1.1rem;
+  cursor: pointer;
+  box-shadow: 6px 6px 0 var(--crimson-dark);
+  width: 100%;
+  text-shadow: 1px 1px 0 rgba(255,255,255,0.3);
+}
+.reveal-btn:active { transform: translate(3px, 3px); box-shadow: 3px 3px 0 var(--crimson-dark); }
+
+/* ================ LEADERBOARD ================ */
+.leaderboard {
+  border: 3px solid var(--gold);
+  background: var(--jet);
+  align-self: start;
+  position: relative;
+}
+
+@media (min-width: 920px) {
+  .leaderboard { position: sticky; top: 90px; }
+}
+
+.leaderboard-list { padding: 0.6rem; display: flex; flex-direction: column; gap: 0.45rem; }
+
+.leader-row {
+  display: grid;
+  grid-template-columns: 28px 1fr auto;
+  gap: 0.55rem;
+  align-items: center;
+  padding: 0.55rem 0.6rem;
+  background: var(--paper);
+  color: var(--jet);
+  border: 2px solid var(--jet);
+  position: relative;
+}
+.leader-row.rank-1 {
+  background: linear-gradient(180deg, var(--gold) 0%, var(--gold-dark) 100%);
+  border-color: var(--bone);
+  box-shadow: 3px 3px 0 var(--crimson-dark);
+  padding-left: 1.5rem;
+}
+.leader-row.rank-1::before {
+  content: '🏆';
+  position: absolute;
+  left: 0.2rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.1rem;
+}
+
+.leader-rank {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  text-align: center;
+  line-height: 1;
+}
+.leader-name {
+  font-family: var(--font-body);
+  font-weight: bold;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.leader-score {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  background: var(--crimson);
+  color: var(--gold);
+  padding: 0.15rem 0.45rem;
+  border: 1px solid var(--jet);
+  line-height: 1;
+}
+.leader-row.rank-1 .leader-score {
+  background: var(--jet);
+  color: var(--gold);
+}
+
+/* Mobile collapsible leaderboard */
+.leaderboard-toggle {
+  display: none;
+  width: 100%;
+  background: var(--crimson);
+  color: var(--gold);
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  letter-spacing: 0.22em;
+  padding: 0.55rem 1rem;
+  text-transform: uppercase;
+  border: none;
+  border-bottom: 3px solid var(--gold);
+  cursor: pointer;
+  text-align: left;
+  text-shadow: 2px 2px 0 var(--jet);
+}
+@media (max-width: 919px) {
+  .leaderboard-toggle { display: block; }
+  .leaderboard .section-header { display: none; }
+  .leaderboard .leaderboard-list { display: none; }
+  .leaderboard.open .leaderboard-list { display: flex; }
+}
+
+/* ================ MODAL ================ */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 500;
+  background: rgba(0,0,0,0.85);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+  overflow-y: auto;
+}
+.modal-overlay.active { display: flex; }
+
+.modal {
+  background: var(--paper);
+  color: var(--jet);
+  border: 4px solid var(--gold);
+  box-shadow: 0 0 0 4px var(--jet), 0 14px 50px rgba(0,0,0,0.7);
+  width: 100%;
+  max-width: 600px;
+  max-height: 92vh;
+  overflow-y: auto;
+  animation: modalIn 0.3s ease-out;
+}
+
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.92); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.modal-header {
+  background: linear-gradient(180deg, var(--crimson), var(--crimson-dark));
+  color: var(--gold);
+  padding: 1.5rem 1rem 1.2rem;
+  text-align: center;
+  border-bottom: 4px solid var(--gold);
+  position: relative;
+  overflow: hidden;
+}
+.modal-header::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(45deg,
+      rgba(255,184,28,0.05) 0px,
+      rgba(255,184,28,0.05) 4px,
+      transparent 4px,
+      transparent 14px);
+  pointer-events: none;
+}
+.modal-header > * { position: relative; z-index: 1; }
+
+.modal-eyebrow {
+  font-family: var(--font-display);
+  font-size: 0.78rem;
+  letter-spacing: 0.3em;
+  margin-bottom: 0.5rem;
+  color: var(--gold);
+}
+.modal-champion-name {
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 7vw, 2.4rem);
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--bone);
+  text-shadow: 3px 3px 0 var(--jet);
+  margin: 0.4rem 0 0.5rem;
+  word-break: break-word;
+}
+.modal-champion-score {
+  font-family: var(--font-display);
+  font-size: 3.6rem;
+  color: var(--gold);
+  line-height: 1;
+  text-shadow: 4px 4px 0 var(--jet);
+}
+.modal-stamp {
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  letter-spacing: 0.26em;
+  margin-top: 0.7rem;
+  border-top: 1px solid var(--gold);
+  padding-top: 0.6rem;
+  display: inline-block;
+}
+
+.modal-body { padding: 0.5rem 0; }
+
+.modal-rank-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 0.7rem;
+  align-items: center;
+  padding: 0.7rem 1rem;
+  border-bottom: 2px dashed var(--crimson);
+}
+.modal-rank-row:last-of-type { border-bottom: none; }
+.modal-rank-row.is-champ { background: rgba(255,184,28,0.18); }
+
+.modal-rank-num {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  background: var(--crimson);
+  color: var(--gold);
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border: 2px solid var(--jet);
+  line-height: 1;
+}
+.modal-rank-row.is-champ .modal-rank-num { background: var(--gold); color: var(--jet); }
+
+.modal-rank-name {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  line-height: 1.05;
+}
+.modal-rank-detail {
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  font-style: italic;
+  color: rgba(0,0,0,0.7);
+  margin-top: 0.25rem;
+}
+
+.modal-rank-score {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  color: var(--crimson);
+  line-height: 1;
+}
+.modal-rank-row.is-champ .modal-rank-score { color: var(--gold-dark); }
+
+.modal-actions {
+  display: flex;
+  gap: 0.6rem;
+  padding: 1rem;
+  border-top: 3px solid var(--gold);
+  background: var(--jet);
+  flex-wrap: wrap;
+}
+.modal-actions .btn { flex: 1; min-width: 120px; }
+
+/* ================ ADD STOP FORM ================ */
+.add-stop-form { padding: 1rem; display: flex; flex-direction: column; gap: 0.85rem; background: var(--paper); }
+.add-stop-form input,
+.add-stop-form textarea {
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  padding: 0.55rem;
+  border: 2px solid var(--jet);
+  background: var(--bone);
+  width: 100%;
+  outline: none;
+  color: var(--jet);
+}
+.add-stop-form input:focus,
+.add-stop-form textarea:focus { border-color: var(--crimson); }
+.add-stop-form label {
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 0.25rem;
+  color: var(--jet);
+}
+.coord-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+
+/* ================ TOAST ================ */
+.toast {
+  position: fixed;
+  bottom: 1.2rem;
+  left: 50%;
+  transform: translateX(-50%) translateY(160%);
+  background: var(--gold);
+  color: var(--jet);
+  font-family: var(--font-display);
+  letter-spacing: 0.16em;
+  padding: 0.7rem 1.2rem;
+  border: 3px solid var(--jet);
+  z-index: 600;
+  transition: transform 0.3s cubic-bezier(.2,.9,.3,1.4);
+  box-shadow: 4px 4px 0 var(--crimson-dark);
+  text-transform: uppercase;
+  font-size: 0.85rem;
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<!-- ================ SPLASH SCREEN ================ -->
+<div class="splash" id="splash">
+  <div class="splash-content">
+    <svg class="splash-mask" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <!-- mask base -->
+      <path d="M50,5 C20,5 10,30 12,55 C14,75 28,95 50,95 C72,95 86,75 88,55 C90,30 80,5 50,5 Z" fill="#0F0F0F" stroke="#FFB81C" stroke-width="3"/>
+      <!-- eye holes -->
+      <ellipse cx="33" cy="42" rx="9" ry="11" fill="#C8102E"/>
+      <ellipse cx="67" cy="42" rx="9" ry="11" fill="#C8102E"/>
+      <ellipse cx="33" cy="42" rx="4" ry="5" fill="#FFF5E1"/>
+      <ellipse cx="67" cy="42" rx="4" ry="5" fill="#FFF5E1"/>
+      <!-- mouth -->
+      <path d="M35,68 Q50,80 65,68 L65,76 Q50,86 35,76 Z" fill="#C8102E"/>
+      <!-- forehead lightning bolt -->
+      <path d="M50,12 L42,30 L48,30 L41,44 L57,24 L50,24 Z" fill="#FFB81C" stroke="#0F0F0F" stroke-width="0.5"/>
+      <!-- side accents -->
+      <path d="M14,46 L23,49 L14,54" stroke="#FFB81C" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      <path d="M86,46 L77,49 L86,54" stroke="#FFB81C" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      <!-- chin stripes -->
+      <path d="M40,82 L60,82" stroke="#FFB81C" stroke-width="2"/>
+      <path d="M44,87 L56,87" stroke="#FFB81C" stroke-width="2"/>
+    </svg>
+    <div class="splash-eyebrow">★ Cinco de Mayo Championship ★</div>
+    <h1 class="splash-title">La Lucha<em>del Taco</em></h1>
+    <div class="splash-credentials">Mayo 5, 2026 · Gaslamp District · San Diego, CA</div>
+    <p class="splash-flavor">"On this sacred day, five warriors enter the ring. Only one taco shall reign supreme. ¡Que empiece la lucha!"</p>
+    <div class="countdown-label">★ La Lucha Begins In ★</div>
+    <div class="countdown" id="countdown">
+      <div class="countdown-cell"><span class="countdown-num" id="cd-h">--</span><span class="countdown-unit">Hours</span></div>
+      <div class="countdown-cell"><span class="countdown-num" id="cd-m">--</span><span class="countdown-unit">Min</span></div>
+      <div class="countdown-cell"><span class="countdown-num" id="cd-s">--</span><span class="countdown-unit">Sec</span></div>
+    </div>
+    <button class="enter-btn" id="enterBtn">★ Enter the Ring ★</button>
+  </div>
+</div>
+
+<!-- ================ MAIN APP ================ -->
+<div class="app-shell" id="appShell">
+  <header class="sticky-header">
+    <div class="sticky-header-row">
+      <svg class="sticky-mask" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <path d="M50,5 C20,5 10,30 12,55 C14,75 28,95 50,95 C72,95 86,75 88,55 C90,30 80,5 50,5 Z" fill="#C8102E" stroke="#FFB81C" stroke-width="4"/>
+        <ellipse cx="33" cy="42" rx="9" ry="11" fill="#0F0F0F"/>
+        <ellipse cx="67" cy="42" rx="9" ry="11" fill="#0F0F0F"/>
+        <path d="M35,68 Q50,80 65,68 L65,76 Q50,86 35,76 Z" fill="#0F0F0F"/>
+        <path d="M50,12 L42,30 L48,30 L41,44 L57,24 L50,24 Z" fill="#FFB81C"/>
+      </svg>
+      <div class="sticky-title-block">
+        <div class="sticky-title">La Lucha del Taco</div>
+        <div class="sticky-date">Mayo 5, 2026 · Gaslamp District</div>
+      </div>
+      <div class="sticky-leader" id="stickyLeader">
+        <div class="sticky-leader-label">★ Líder ★</div>
+        <div class="sticky-leader-name" id="stickyLeaderName">—</div>
+        <div class="sticky-leader-score" id="stickyLeaderScore">—</div>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-grid">
+    <div class="left-col">
+      <section class="map-section">
+        <div class="section-header">★ El Mapa de La Lucha ★</div>
+        <div id="map"></div>
+      </section>
+
+      <section class="stops-section">
+        <div class="section-header" style="border:3px solid var(--gold);">★ La Cartelera · Fight Card ★</div>
+        <div id="stopsList"></div>
+        <div class="actions-bar">
+          <button class="add-stop-btn" id="addStopBtn">+ Add Combatiente</button>
+          <button class="reveal-btn" id="revealBtn">★ Reveal El Campeón ★</button>
+        </div>
+      </section>
+    </div>
+
+    <aside class="leaderboard" id="leaderboard">
+      <button class="leaderboard-toggle" id="leaderboardToggle">★ Tabla de Posiciones ▾</button>
+      <div class="section-header">★ Tabla de Posiciones ★</div>
+      <div class="leaderboard-list" id="leaderboardList"></div>
+    </aside>
+  </main>
+</div>
+
+<!-- ================ ADD STOP MODAL ================ -->
+<div class="modal-overlay" id="addStopModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-eyebrow">★ NEW CHALLENGER ★</div>
+      <div class="modal-champion-name" style="font-size:1.6rem;">Add a Combatiente</div>
+    </div>
+    <div class="add-stop-form">
+      <div>
+        <label>Stop Name</label>
+        <input type="text" id="newStopName" placeholder="El Tacqueria Fantástico">
+      </div>
+      <div>
+        <label>Description</label>
+        <textarea id="newStopDesc" rows="2" placeholder="Famous for their..."></textarea>
+      </div>
+      <div>
+        <label>Address</label>
+        <input type="text" id="newStopAddr" placeholder="123 Main St, San Diego">
+      </div>
+      <div>
+        <label>Coordinates (optional)</label>
+        <div class="coord-row">
+          <input type="number" id="newStopLat" step="any" placeholder="Lat (e.g. 32.7115)">
+          <input type="number" id="newStopLng" step="any" placeholder="Lng (e.g. -117.16)">
+        </div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-danger" id="cancelAddStop">Cancel</button>
+      <button class="btn btn-primary" id="confirmAddStop">★ Add to Card ★</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================ RESULTS MODAL ================ -->
+<div class="modal-overlay" id="resultsModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-eyebrow">★ EL CAMPEÓN DE LA LUCHA DEL TACO 🏆 ★</div>
+      <div class="modal-champion-name" id="modalChampName">—</div>
+      <div class="modal-champion-score" id="modalChampScore">—</div>
+      <div class="modal-stamp">Mayo 5, 2026 · Gaslamp District · San Diego</div>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-actions">
+      <button class="btn btn-danger" id="closeResultsBtn">Close</button>
+      <button class="btn btn-primary" id="copyResultsBtn">★ Copy Results ★</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+
+// ================== CONFIG ==================
+const CATEGORIES = [
+  { key: 'tortilla', label: 'La Tortilla',  sublabel: 'Quality & authenticity of the tortilla' },
+  { key: 'relleno',  label: 'El Relleno',   sublabel: 'Filling, flavor, seasoning, generosity' },
+  { key: 'salsa',    label: 'La Salsa',     sublabel: 'Heat & complexity of the sauce' },
+  { key: 'precio',   label: 'El Precio',    sublabel: 'Value · 1=highway robbery, 10=absolute steal' },
+  { key: 'vibra',    label: 'La Vibra',     sublabel: 'Atmosphere, vibe, overall experience' },
+  { key: 'comodin',  label: 'El Comodín',   sublabel: 'Wildcard · the je ne sais quoi' },
+  { key: 'margarita',label: 'El Margarita', sublabel: 'The drink ordered at this stop' }
+];
+
+const DEFAULT_SCORES = { tortilla: 7, relleno: 7, salsa: 7, precio: 6, vibra: 7, comodin: 7, margarita: 7 };
+
+const INITIAL_STOPS = [
+  {
+    id: 's1',
+    name: 'Puesto Headquarters',
+    desc: 'Wood-fired tacos and stone-ground masa right on the bayfront — refined Mexican street food with a view.',
+    address: '789 W Harbor Dr',
+    lat: 32.7100, lng: -117.1696,
+    photo: null, notes: '',
+    scores: { ...DEFAULT_SCORES },
+    expanded: true
+  },
+  {
+    id: 's2',
+    name: 'El Chingon Mexican Bistro',
+    desc: 'Bold modern Mexican on Fifth Avenue — bottomless brunch energy and serious tequila program after dark.',
+    address: '560 Fifth Ave',
+    lat: 32.7115, lng: -117.1593,
+    photo: null, notes: '',
+    scores: { ...DEFAULT_SCORES },
+    expanded: false
+  },
+  {
+    id: 's3',
+    name: 'La Puerta',
+    desc: 'A Gaslamp staple for late-night tacos and well-priced margaritas in a graffiti-soaked cantina.',
+    address: '560 Fourth Ave',
+    lat: 32.7110, lng: -117.1601,
+    photo: null, notes: '',
+    scores: { ...DEFAULT_SCORES },
+    expanded: false
+  },
+  {
+    id: 's4',
+    name: 'Lola 55',
+    desc: 'East Village taqueria pushing the boundaries — duck carnitas, soft-shell crab tacos, the works.',
+    address: '1290 F St',
+    lat: 32.7137, lng: -117.1542,
+    photo: null, notes: '',
+    scores: { ...DEFAULT_SCORES },
+    expanded: false
+  },
+  {
+    id: 's5',
+    name: 'Tacos El Gordo',
+    desc: 'Cash, crowds, and Tijuana-style adobada off the trompo — a true San Diego pilgrimage.',
+    address: '1118 Sixth Ave',
+    lat: 32.7160, lng: -117.1620,
+    photo: null, notes: '',
+    scores: { ...DEFAULT_SCORES },
+    expanded: false
+  }
+];
+
+// ================== STATE ==================
+let stops = JSON.parse(JSON.stringify(INITIAL_STOPS));
+let map = null;
+let mapMarkers = {};
+let editingStopId = null; // null = add mode, string = edit mode
+
+// ================== UTILS ==================
+function escapeHtml(str) {
+  if (str == null) return '';
+  return String(str).replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  })[c]);
+}
+
+function getCompositeScore(stop) {
+  const arr = CATEGORIES.map(c => stop.scores[c.key]);
+  const sum = arr.reduce((a, b) => a + b, 0);
+  return sum / arr.length;
+}
+
+function getRanked() {
+  return [...stops].map(s => ({ ...s, composite: getCompositeScore(s) }))
+    .sort((a, b) => b.composite - a.composite);
+}
+
+function getLeaderId() {
+  if (!stops.length) return null;
+  return getRanked()[0].id;
+}
+
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2400);
+}
+
+// ================== COUNTDOWN ==================
+const TARGET = new Date('2026-05-05T19:00:00-07:00').getTime();
+
+function updateCountdown() {
+  const cdH = document.getElementById('cd-h');
+  const cdM = document.getElementById('cd-m');
+  const cdS = document.getElementById('cd-s');
+  if (!cdH) return;
+  const diff = TARGET - Date.now();
+  if (diff <= 0) {
+    cdH.textContent = '00';
+    cdM.textContent = '00';
+    cdS.textContent = '00';
+    const lbl = document.querySelector('.countdown-label');
+    if (lbl) lbl.textContent = '★ ¡La Lucha is LIVE! ★';
+    return;
+  }
+  const totalH = Math.floor(diff / 3600000);
+  const m = Math.floor((diff % 3600000) / 60000);
+  const s = Math.floor((diff % 60000) / 1000);
+  cdH.textContent = String(totalH).padStart(2, '0');
+  cdM.textContent = String(m).padStart(2, '0');
+  cdS.textContent = String(s).padStart(2, '0');
+}
+updateCountdown();
+setInterval(updateCountdown, 1000);
+
+// ================== SPLASH → APP ==================
+document.getElementById('enterBtn').addEventListener('click', () => {
+  document.getElementById('splash').style.display = 'none';
+  document.getElementById('appShell').classList.add('active');
+  setTimeout(() => {
+    initMap();
+    render();
+  }, 60);
+});
+
+// ================== MAP ==================
+function makeNumberedIcon(num) {
+  return L.divIcon({
+    className: 'lucha-marker',
+    html: `<div style="
+      background: #C8102E;
+      color: #FFB81C;
+      border: 3px solid #0F0F0F;
+      width: 36px; height: 36px;
+      display: grid; place-items: center;
+      font-family: Impact, 'Arial Black', sans-serif;
+      font-size: 1.25rem;
+      box-shadow: 0 4px 0 rgba(0,0,0,0.5), 0 0 0 2px #FFB81C;
+      transform: rotate(-6deg);
+    ">${num}</div>`,
+    iconSize: [36, 36],
+    iconAnchor: [18, 36]
+  });
+}
+
+function initMap() {
+  if (map) return;
+  map = L.map('map', { scrollWheelZoom: false }).setView([32.7115, -117.1593], 15);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="https://carto.com/attributions">CARTO</a>',
+    subdomains: 'abcd',
+    maxZoom: 19
+  }).addTo(map);
+  // re-enable scroll zoom only when map clicked
+  map.on('click', () => map.scrollWheelZoom.enable());
+  map.on('mouseout', () => map.scrollWheelZoom.disable());
+  refreshMarkers();
+}
+
+function refreshMarkers() {
+  if (!map) return;
+  Object.values(mapMarkers).forEach(m => map.removeLayer(m));
+  mapMarkers = {};
+  stops.forEach((stop, i) => {
+    const marker = L.marker([stop.lat, stop.lng], { icon: makeNumberedIcon(i + 1) })
+      .addTo(map)
+      .bindPopup(`<strong>${escapeHtml(stop.name)}</strong><br>${escapeHtml(stop.address)}`);
+    mapMarkers[stop.id] = marker;
+  });
+}
+
+// ================== RENDER ==================
+function render() {
+  renderStops();
+  renderLeaderboard();
+  refreshMarkers();
+  updateStickyLeader();
+}
+
+function renderStops() {
+  const list = document.getElementById('stopsList');
+  list.innerHTML = '';
+  const leaderId = getLeaderId();
+  stops.forEach((stop, idx) => {
+    const composite = getCompositeScore(stop).toFixed(1);
+    const card = document.createElement('div');
+    card.className = 'stop-card' + (stop.expanded ? ' expanded' : '') + (stop.id === leaderId ? ' is-leader' : '');
+    card.dataset.stopId = stop.id;
+    card.innerHTML = `
+      <div class="stop-header" data-action="toggle" data-id="${stop.id}">
+        <div class="stop-number">${idx + 1}</div>
+        <div class="stop-name-block">
+          <div class="stop-name">${escapeHtml(stop.name)}</div>
+          <div class="stop-address">${escapeHtml(stop.address)}</div>
+        </div>
+        <div class="stop-score-pill">
+          <small>TOTAL</small>
+          <span class="pill-score">${composite}</span>
+          <svg class="stop-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </div>
+      </div>
+      <div class="stop-body">
+        <p class="stop-description">${escapeHtml(stop.desc)}</p>
+        <div class="photo-section">
+          ${stop.photo ? `<img class="photo-thumb" src="${stop.photo}" alt="${escapeHtml(stop.name)}">` : ''}
+          <label class="photo-upload-label">
+            📷 ${stop.photo ? 'Replace La Foto' : 'Add La Foto'}
+            <input type="file" accept="image/*" data-photo-id="${stop.id}">
+          </label>
+        </div>
+        <div class="score-grid">
+          ${CATEGORIES.map(cat => `
+            <div class="score-row ${cat.key === 'margarita' ? 'margarita-row' : ''}">
+              <div>
+                <div class="score-label">${cat.label}</div>
+                <div class="score-sublabel">${cat.sublabel}</div>
+              </div>
+              <div class="score-value" id="val-${stop.id}-${cat.key}">${stop.scores[cat.key]}</div>
+              <input class="score-slider" type="range" min="1" max="10" step="1"
+                     value="${stop.scores[cat.key]}"
+                     data-stop="${stop.id}" data-cat="${cat.key}"
+                     aria-label="${cat.label}">
+            </div>
+          `).join('')}
+        </div>
+        <div class="notes-section">
+          <div class="notes-label">★ El Veredicto ★</div>
+          <textarea class="notes-input" data-notes-id="${stop.id}"
+                    placeholder="Tasting notes, memorable quotes, hot takes...">${escapeHtml(stop.notes)}</textarea>
+        </div>
+        <div class="stop-actions">
+          <div class="nav-btns">
+            <button class="btn" data-nav="prev" data-id="${stop.id}">← Prev</button>
+            <button class="btn" data-nav="next" data-id="${stop.id}">Next →</button>
+          </div>
+          <div style="display:flex;gap:0.4rem;">
+            <button class="btn btn-jet" data-edit="${stop.id}">✎ Edit</button>
+            <button class="btn btn-danger" data-remove="${stop.id}">✕ Remove</button>
+          </div>
+        </div>
+      </div>
+    `;
+    list.appendChild(card);
+  });
+  attachStopEvents();
+}
+
+function renderLeaderboard() {
+  const list = document.getElementById('leaderboardList');
+  const ranked = getRanked();
+  if (!ranked.length) {
+    list.innerHTML = '<div style="padding:1rem; color:var(--bone); font-style:italic; text-align:center;">No combatientes yet</div>';
+    return;
+  }
+  list.innerHTML = ranked.map((s, i) => `
+    <div class="leader-row rank-${i + 1}">
+      <div class="leader-rank">${i + 1}</div>
+      <div class="leader-name">${escapeHtml(s.name)}</div>
+      <div class="leader-score">${s.composite.toFixed(1)}</div>
+    </div>
+  `).join('');
+}
+
+function updateStickyLeader() {
+  const ranked = getRanked();
+  if (!ranked.length) {
+    document.getElementById('stickyLeaderName').textContent = '—';
+    document.getElementById('stickyLeaderScore').textContent = '—';
+    return;
+  }
+  document.getElementById('stickyLeaderName').textContent = ranked[0].name;
+  document.getElementById('stickyLeaderScore').textContent = ranked[0].composite.toFixed(1);
+}
+
+function updateLeaderHighlight() {
+  const leaderId = getLeaderId();
+  document.querySelectorAll('.stop-card').forEach(card => {
+    card.classList.toggle('is-leader', card.dataset.stopId === leaderId);
+  });
+}
+
+// ================== EVENT WIRING ==================
+function attachStopEvents() {
+  // Header toggle (delegated to avoid conflict with body buttons)
+  document.querySelectorAll('.stop-header').forEach(h => {
+    h.addEventListener('click', () => {
+      const id = h.dataset.id;
+      const stop = stops.find(s => s.id === id);
+      stop.expanded = !stop.expanded;
+      h.closest('.stop-card').classList.toggle('expanded', stop.expanded);
+    });
+  });
+
+  // Sliders — live update without full re-render to keep slider drag smooth
+  document.querySelectorAll('.score-slider').forEach(sl => {
+    sl.addEventListener('input', e => {
+      e.stopPropagation();
+      const id = sl.dataset.stop;
+      const cat = sl.dataset.cat;
+      const val = parseInt(sl.value, 10);
+      const stop = stops.find(s => s.id === id);
+      stop.scores[cat] = val;
+      // Update value box
+      const valBox = document.getElementById(`val-${id}-${cat}`);
+      if (valBox) valBox.textContent = val;
+      // Update composite pill on this card
+      const card = sl.closest('.stop-card');
+      const pillScore = card.querySelector('.pill-score');
+      if (pillScore) pillScore.textContent = getCompositeScore(stop).toFixed(1);
+      // Refresh leaderboards & leader highlights
+      renderLeaderboard();
+      updateStickyLeader();
+      updateLeaderHighlight();
+    });
+  });
+
+  // Photo upload
+  document.querySelectorAll('[data-photo-id]').forEach(input => {
+    input.addEventListener('change', () => {
+      const id = input.dataset.photoId;
+      const file = input.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = ev => {
+        const stop = stops.find(s => s.id === id);
+        stop.photo = ev.target.result;
+        renderStops();
+      };
+      reader.readAsDataURL(file);
+    });
+  });
+
+  // Notes
+  document.querySelectorAll('[data-notes-id]').forEach(t => {
+    t.addEventListener('input', () => {
+      const id = t.dataset.notesId;
+      const stop = stops.find(s => s.id === id);
+      stop.notes = t.value;
+    });
+  });
+
+  // Prev / Next nav
+  document.querySelectorAll('[data-nav]').forEach(b => {
+    b.addEventListener('click', e => {
+      e.stopPropagation();
+      const dir = b.dataset.nav;
+      const id = b.dataset.id;
+      const idx = stops.findIndex(s => s.id === id);
+      if (idx < 0) return;
+      const targetIdx = dir === 'prev'
+        ? (idx - 1 + stops.length) % stops.length
+        : (idx + 1) % stops.length;
+      stops.forEach((s, i) => s.expanded = i === targetIdx);
+      renderStops();
+      const cards = document.querySelectorAll('.stop-card');
+      if (cards[targetIdx]) {
+        cards[targetIdx].scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  });
+
+  // Edit stop — open modal pre-filled
+  document.querySelectorAll('[data-edit]').forEach(b => {
+    b.addEventListener('click', e => {
+      e.stopPropagation();
+      const id = b.dataset.edit;
+      const stop = stops.find(s => s.id === id);
+      if (!stop) return;
+      editingStopId = id;
+      document.getElementById('newStopName').value = stop.name;
+      document.getElementById('newStopDesc').value = stop.desc;
+      document.getElementById('newStopAddr').value = stop.address;
+      document.getElementById('newStopLat').value = stop.lat;
+      document.getElementById('newStopLng').value = stop.lng;
+      // Update modal header + button for edit mode
+      addStopModal.querySelector('.modal-eyebrow').textContent = '★ EDIT COMBATIENTE ★';
+      addStopModal.querySelector('.modal-champion-name').textContent = 'Edit Stop';
+      document.getElementById('confirmAddStop').textContent = '★ Save Changes ★';
+      addStopModal.classList.add('active');
+      setTimeout(() => document.getElementById('newStopName').focus(), 50);
+    });
+  });
+
+  // Remove
+  document.querySelectorAll('[data-remove]').forEach(b => {
+    b.addEventListener('click', e => {
+      e.stopPropagation();
+      const id = b.dataset.remove;
+      const stop = stops.find(s => s.id === id);
+      if (!stop) return;
+      if (!confirm(`Remove "${stop.name}" from the fight card?`)) return;
+      stops = stops.filter(s => s.id !== id);
+      render();
+      showToast(`✕ ${stop.name} eliminated`);
+    });
+  });
+}
+
+// ================== ADD STOP ==================
+const addStopModal = document.getElementById('addStopModal');
+
+document.getElementById('addStopBtn').addEventListener('click', () => {
+  editingStopId = null;
+  ['newStopName','newStopDesc','newStopAddr','newStopLat','newStopLng'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  // Reset modal header + button to add mode
+  addStopModal.querySelector('.modal-eyebrow').textContent = '★ NEW CHALLENGER ★';
+  addStopModal.querySelector('.modal-champion-name').textContent = 'Add a Combatiente';
+  document.getElementById('confirmAddStop').textContent = '★ Add to Card ★';
+  addStopModal.classList.add('active');
+  setTimeout(() => document.getElementById('newStopName').focus(), 50);
+});
+
+document.getElementById('cancelAddStop').addEventListener('click', () => {
+  editingStopId = null;
+  addStopModal.classList.remove('active');
+});
+
+document.getElementById('confirmAddStop').addEventListener('click', () => {
+  const name = document.getElementById('newStopName').value.trim();
+  if (!name) { showToast('Name required, campeón'); return; }
+  const desc = document.getElementById('newStopDesc').value.trim() || 'A new challenger has entered the ring.';
+  const addr = document.getElementById('newStopAddr').value.trim() || 'Gaslamp District, San Diego';
+  const latStr = document.getElementById('newStopLat').value.trim();
+  const lngStr = document.getElementById('newStopLng').value.trim();
+
+  if (editingStopId) {
+    // EDIT MODE — patch the existing stop in-place
+    const stop = stops.find(s => s.id === editingStopId);
+    if (stop) {
+      stop.name = name;
+      stop.desc = desc;
+      stop.address = addr;
+      if (latStr) stop.lat = parseFloat(latStr);
+      if (lngStr) stop.lng = parseFloat(lngStr);
+    }
+    editingStopId = null;
+    addStopModal.classList.remove('active');
+    render();
+    showToast(`★ ${name} updated! ★`);
+  } else {
+    // ADD MODE — create new stop
+    const lat = latStr ? parseFloat(latStr) : 32.7115 + (Math.random() - 0.5) * 0.008;
+    const lng = lngStr ? parseFloat(lngStr) : -117.1600 + (Math.random() - 0.5) * 0.008;
+    const newStop = {
+      id: 's' + Date.now(),
+      name, desc, address: addr,
+      lat, lng,
+      photo: null, notes: '',
+      scores: { ...DEFAULT_SCORES },
+      expanded: true
+    };
+    stops.forEach(s => s.expanded = false);
+    stops.push(newStop);
+    addStopModal.classList.remove('active');
+    render();
+    // Scroll to new stop
+    setTimeout(() => {
+      const cards = document.querySelectorAll('.stop-card');
+      const last = cards[cards.length - 1];
+      if (last) last.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 80);
+    showToast(`★ ${name} entered the ring! ★`);
+  }
+});
+
+// ================== RESULTS / REVEAL ==================
+const resultsModal = document.getElementById('resultsModal');
+
+document.getElementById('revealBtn').addEventListener('click', revealChampion);
+document.getElementById('closeResultsBtn').addEventListener('click', () => {
+  resultsModal.classList.remove('active');
+});
+
+function revealChampion() {
+  if (!stops.length) { showToast('Add some combatientes first!'); return; }
+  const ranked = getRanked();
+  const champ = ranked[0];
+  document.getElementById('modalChampName').textContent = champ.name;
+  document.getElementById('modalChampScore').textContent = champ.composite.toFixed(1);
+  const body = document.getElementById('modalBody');
+  body.innerHTML = ranked.map((s, i) => {
+    const cats = CATEGORIES
+      .map(c => `${c.label.replace(/^(La |El )/, '')}: ${s.scores[c.key]}`)
+      .join(' · ');
+    return `
+      <div class="modal-rank-row ${i === 0 ? 'is-champ' : ''}">
+        <div class="modal-rank-num">${i + 1}</div>
+        <div>
+          <div class="modal-rank-name">${escapeHtml(s.name)}</div>
+          <div class="modal-rank-detail">${cats}</div>
+        </div>
+        <div class="modal-rank-score">${s.composite.toFixed(1)}</div>
+      </div>
+    `;
+  }).join('');
+  resultsModal.classList.add('active');
+  fireConfetti();
+}
+
+function fireConfetti() {
+  if (typeof confetti !== 'function') {
+    console.warn('confetti not available — skipping celebration');
+    return;
+  }
+  const luchaColors = ['#C8102E', '#FFB81C', '#0F0F0F', '#FFF5E1'];
+  const flagColors  = ['#006847', '#FFFFFF', '#C8102E'];
+  const blast = (origin, colors) => confetti({
+    particleCount: 80,
+    spread: 80,
+    startVelocity: 50,
+    origin,
+    colors,
+    scalar: 1.1
+  });
+  blast({ x: 0.2, y: 0.4 }, luchaColors);
+  setTimeout(() => blast({ x: 0.8, y: 0.4 }, flagColors), 250);
+  setTimeout(() => blast({ x: 0.5, y: 0.3 }, luchaColors), 500);
+  setTimeout(() => typeof confetti === 'function' && confetti({
+    particleCount: 220,
+    spread: 160,
+    startVelocity: 60,
+    origin: { x: 0.5, y: 0.5 },
+    colors: [...luchaColors, ...flagColors]
+  }), 800);
+  setTimeout(() => blast({ x: 0.3, y: 0.6 }, flagColors), 1100);
+  setTimeout(() => blast({ x: 0.7, y: 0.6 }, luchaColors), 1400);
+}
+
+document.getElementById('copyResultsBtn').addEventListener('click', async () => {
+  const ranked = getRanked();
+  const lines = [];
+  lines.push('🏆 LA LUCHA DEL TACO 🏆');
+  lines.push('Mayo 5, 2026 · Gaslamp District · San Diego');
+  lines.push('');
+  lines.push(`EL CAMPEÓN: ${ranked[0].name} — ${ranked[0].composite.toFixed(1)}`);
+  lines.push('');
+  lines.push('FINAL RANKINGS:');
+  ranked.forEach((s, i) => {
+    const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '  ';
+    lines.push(`${medal} ${i + 1}. ${s.name} — ${s.composite.toFixed(1)}`);
+  });
+  lines.push('');
+  lines.push('¡Que viva el taco!');
+  const text = lines.join('\n');
+  try {
+    await navigator.clipboard.writeText(text);
+    showToast('★ Results copied to clipboard! ★');
+  } catch (err) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); showToast('★ Results copied! ★'); }
+    catch (e) { showToast('Copy failed — long-press to select'); }
+    document.body.removeChild(ta);
+  }
+});
+
+// ================== MOBILE LEADERBOARD TOGGLE ==================
+document.getElementById('leaderboardToggle').addEventListener('click', () => {
+  const lb = document.getElementById('leaderboard');
+  lb.classList.toggle('open');
+  const btn = document.getElementById('leaderboardToggle');
+  btn.textContent = lb.classList.contains('open')
+    ? '★ Tabla de Posiciones ▴'
+    : '★ Tabla de Posiciones ▾';
+});
+
+// ================== CLICK OUTSIDE MODAL ==================
+[addStopModal, resultsModal].forEach(m => {
+  m.addEventListener('click', e => {
+    if (e.target === m) m.classList.remove('active');
+  });
+});
+
+// Escape closes modals
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    addStopModal.classList.remove('active');
+    resultsModal.classList.remove('active');
+  }
+});
+
+</script>
+</body>
+</html>
